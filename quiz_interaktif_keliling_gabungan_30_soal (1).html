@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interaktif: 30 Soal Keliling Gabungan Bangun Datar</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#4F46E5',
+                            lightBlue: '#EEF2FF',
+                            yellow: '#F59E0B',
+                            green: '#10B981',
+                            pink: '#EC4899',
+                            purple: '#8B5CF6'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        nunito: ['Nunito', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #F8FAFC;
+        }
+        h1, h2, h3, .font-heading {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .nav-grid-btn.current {
+            border-color: #4F46E5;
+            background-color: #EEF2FF;
+            color: #4F46E5;
+            font-weight: 800;
+        }
+        .nav-grid-btn.answered-correct {
+            background-color: #10B981;
+            color: white;
+            border-color: #059669;
+        }
+        .nav-grid-btn.answered-incorrect {
+            background-color: #EF4444;
+            color: white;
+            border-color: #DC2626;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between selection:bg-brand-yellow selection:text-white">
+
+    <!-- HEADER -->
+    <header class="bg-white border-b-4 border-indigo-100 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 text-white p-2.5 rounded-2xl shadow-md">
+                    <i class="fa-solid fa-pen-to-square text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold text-indigo-900 leading-none">Quiz Kuis Matematika SD</h1>
+                    <span class="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full inline-block mt-1">30 Soal Essay • Keliling Gabungan</span>
+                </div>
+            </div>
+
+            <!-- Auto-save Status & Reset -->
+            <div class="flex items-center gap-3">
+                <span id="save-status" class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Jawaban Tersimpan
+                </span>
+                <button onclick="confirmReset()" class="text-xs font-bold text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200 transition">
+                    <i class="fa-solid fa-rotate-right"></i> Reset Semua
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full grid md:grid-cols-12 gap-6">
+
+        <!-- KIRI: AREA SOAL (8 COLS) -->
+        <section class="md:col-span-8 space-y-4">
+            
+            <!-- Question Card -->
+            <div class="bg-white p-5 md:p-7 rounded-3xl border-2 border-slate-100 shadow-sm space-y-5">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <span id="q-number-badge" class="bg-indigo-600 text-white text-xs md:text-sm font-bold px-3.5 py-1 rounded-full">
+                        Soal 1 dari 30
+                    </span>
+                    <span id="q-score-badge" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                        Skor: 0 / 30
+                    </span>
+                </div>
+
+                <!-- Soal Teks & Gambar -->
+                <div id="q-content-area" class="space-y-4">
+                    <h3 id="q-title" class="font-bold text-lg text-slate-800"></h3>
+                    <p id="q-desc" class="text-sm text-slate-600 leading-relaxed"></p>
+
+                    <!-- Frame Visual Gambar SVG -->
+                    <div id="q-svg-container" class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center flex justify-center items-center min-h-[180px]">
+                        <!-- Render SVG -->
+                    </div>
+                </div>
+
+                <!-- Input Jawaban -->
+                <div class="bg-slate-50 p-4 md:p-5 rounded-2xl border border-slate-200 space-y-3">
+                    <label class="block font-bold text-sm text-slate-700">Masukkan Jawaban Keliling:</label>
+                    <div class="flex flex-wrap sm:flex-nowrap gap-3 items-center">
+                        <div class="relative w-full sm:w-48">
+                            <input type="number" id="user-input-ans" placeholder="Ketik angka..." class="w-full px-4 py-2.5 border-2 border-slate-300 rounded-xl text-base font-bold focus:outline-none focus:border-indigo-500 bg-white">
+                        </div>
+                        <span id="q-unit" class="font-bold text-slate-600 text-sm">cm</span>
+                        
+                        <button onclick="checkCurrentAnswer()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-check"></i> Periksa Jawaban
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feedback Instan -->
+                <div id="instant-feedback" class="hidden p-4 rounded-2xl border text-sm font-bold space-y-1">
+                    <!-- Dynamic Feedback -->
+                </div>
+            </div>
+
+            <!-- Tombol Navigasi Bawah -->
+            <div class="flex justify-between items-center gap-3">
+                <button onclick="prevQuestion()" id="btn-prev" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-5 py-2.5 rounded-2xl transition flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> Sebelumnya
+                </button>
+                <button onclick="nextQuestion()" id="btn-next" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-2xl shadow-md transition flex items-center gap-2 text-sm">
+                    Berikutnya <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+        </section>
+
+        <!-- KANAN: KISI NAVIGASI 30 SOAL (4 COLS) -->
+        <aside class="md:col-span-4 space-y-4">
+            <div class="bg-white p-5 rounded-3xl border-2 border-slate-100 shadow-sm sticky top-20">
+                <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-grip text-indigo-600"></i> Navigasi Soal (1 - 30)
+                </h3>
+
+                <!-- Status Legend -->
+                <div class="grid grid-cols-2 gap-2 text-[11px] mb-4 text-slate-600 font-medium">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 border"></span> Benar
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-rose-500 border"></span> Salah
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-indigo-50 border border-indigo-600"></span> Sedang Dibuka
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-slate-100 border border-slate-300"></span> Belum Diisi
+                    </div>
+                </div>
+
+                <!-- Grid Buttons 1 - 30 -->
+                <div id="nav-grid" class="grid grid-cols-5 gap-2 max-h-[360px] overflow-y-auto p-1">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Overall Progress Bar -->
+                <div class="mt-5 border-t pt-4">
+                    <div class="flex justify-between text-xs font-bold text-slate-600 mb-1">
+                        <span>Progres Selesai</span>
+                        <span id="progress-text">0 / 30</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <div class="max-w-6xl mx-auto px-4">
+            <p><strong>Quiz Interaktif Matematika Kelas 5 SD</strong> • Keliling Gabungan Bangun Datar</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // DATA 30 SOAL ESSAY KELILING GABUNGAN BANGUN DATAR
+        const quizData = [
+            {
+                id: 1,
+                title: "Soal 1: Gabungan 2 Persegi Panjang Sejajar",
+                desc: "Sebuah lantai gedung berbentuk gabungan dua persegi panjang. Sisi-sisi terluarnya berukuran: 10 cm (atas), 4 cm (kanan atas), 6 cm (tengah), 4 cm (kanan bawah), 16 cm (bawah), dan 8 cm (kiri). Hitung kelilingnya!",
+                svg: `<svg width="220" height="130" viewBox="0 0 220 130"><polygon points="30,20 130,20 130,60 190,60 190,100 30,100" fill="#EEF2FF" stroke="#4F46E5" stroke-width="3"/><text x="80" y="15" font-size="10" font-weight="bold">10 cm</text><text x="135" y="45" font-size="10" font-weight="bold">4 cm</text><text x="160" y="55" font-size="10" font-weight="bold">6 cm</text><text x="195" y="85" font-size="10" font-weight="bold">4 cm</text><text x="110" y="115" font-size="10" font-weight="bold">16 cm</text><text x="10" y="65" font-size="10" font-weight="bold">8 cm</text></svg>`,
+                correct: 48,
+                unit: "cm"
+            },
+            {
+                id: 2,
+                title: "Soal 2: Persegi dan Segitiga Sama Sisi",
+                desc: "Atap rumah berbentuk segitiga sama sisi menempel di atas persegi berukuran sisi 10 cm. Berapakah keliling luar gabungan tersebut?",
+                svg: `<svg width="180" height="150" viewBox="0 0 180 150"><rect x="40" y="70" width="80" height="70" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><polygon points="40,70 80,20 120,70" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><line x1="40" y1="70" x2="120" y2="70" stroke="#CBD5E1" stroke-dasharray="4,4" stroke-width="2"/><text x="80" y="148" font-size="10" font-weight="bold">10 cm</text><text x="20" y="110" font-size="10" font-weight="bold">10 cm</text><text x="125" y="110" font-size="10" font-weight="bold">10 cm</text><text x="50" y="40" font-size="10" font-weight="bold">10 cm</text><text x="100" y="40" font-size="10" font-weight="bold">10 cm</text></svg>`,
+                correct: 50,
+                unit: "cm"
+            },
+            {
+                id: 3,
+                title: "Soal 3: Gabungan Trapesium dan Persegi Panjang",
+                desc: "Suatu taman berbentuk persegi panjang (panjang 15 m, lebar 6 m) digabung dengan trapesium siku-siku di atasnya (sisi atas 9 m, sisi miring 10 m, tinggi trapesium 8 m). Hitung keliling taman!",
+                svg: `<svg width="220" height="140" viewBox="0 0 220 140"><rect x="40" y="70" width="140" height="50" fill="#D1FAE5" stroke="#10B981" stroke-width="3"/><polygon points="40,70 40,20 110,20 180,70" fill="#E0E7FF" stroke="#4F46E5" stroke-width="3"/><line x1="40" y1="70" x2="180" y2="70" stroke="#CBD5E1" stroke-dasharray="4,4" stroke-width="2"/><text x="70" y="15" font-size="10" font-weight="bold">9 m</text><text x="150" y="40" font-size="10" font-weight="bold">10 m</text><text x="25" y="45" font-size="10" font-weight="bold">8 m</text><text x="25" y="100" font-size="10" font-weight="bold">6 m</text><text x="185" y="100" font-size="10" font-weight="bold">6 m</text><text x="100" y="132" font-size="10" font-weight="bold">15 m</text></svg>`,
+                correct: 54,
+                unit: "m"
+            },
+            {
+                id: 4,
+                title: "Soal 4: Gabungan Layang-Layang dan Persegi",
+                desc: "Hiasan dinding berbentuk persegi (sisi 12 cm) di bagian bawah dan layang-layang di bagian atas dengan dua sisi atas masing-masing 10 cm. Berapakah keliling gabungannya?",
+                svg: `<svg width="180" height="160" viewBox="0 0 180 160"><rect x="50" y="80" width="80" height="70" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><polygon points="50,80 90,20 130,80 90,100" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><text x="60" y="45" font-size="10" font-weight="bold">10 cm</text><text x="105" y="45" font-size="10" font-weight="bold">10 cm</text><text x="30" y="120" font-size="10" font-weight="bold">12 cm</text><text x="135" y="120" font-size="10" font-weight="bold">12 cm</text><text x="80" y="158" font-size="10" font-weight="bold">12 cm</text></svg>`,
+                correct: 56,
+                unit: "cm"
+            },
+            {
+                id: 5,
+                title: "Soal 5: Bentuk Huruf L (Dua Persegi Panjang)",
+                desc: "Bangun datar berbentuk huruf L memiliki panjang sisi luar: atas = 6 cm, kanan atas = 5 cm, tengah = 8 cm, kanan bawah = 7 cm, bawah = 14 cm, dan kiri = 12 cm. Hitung keliling huruf L tersebut!",
+                svg: `<svg width="180" height="150" viewBox="0 0 180 150"><polygon points="30,20 90,20 90,70 150,70 150,130 30,130" fill="#EEF2FF" stroke="#4F46E5" stroke-width="3"/><text x="55" y="15" font-size="10" font-weight="bold">6 cm</text><text x="95" y="45" font-size="10" font-weight="bold">5 cm</text><text x="115" y="65" font-size="10" font-weight="bold">8 cm</text><text x="155" y="105" font-size="10" font-weight="bold">7 cm</text><text x="80" y="145" font-size="10" font-weight="bold">14 cm</text><text x="10" y="80" font-size="10" font-weight="bold">12 cm</text></svg>`,
+                correct: 52,
+                unit: "cm"
+            },
+            {
+                id: 6,
+                title: "Soal 6: Gabungan Belah Ketupat dan Persegi Panjang",
+                desc: "Sebuah belah ketupat (panjang sisi 8 cm) berhimpit pada salah satu sisi tegaknya dengan persegi panjang (panjang 15 cm, lebar 8 cm). Hitung keliling luar bangun gabungan ini!",
+                svg: `<svg width="240" height="130" viewBox="0 0 240 130"><rect x="80" y="30" width="130" height="80" fill="#D1FAE5" stroke="#10B981" stroke-width="3"/><polygon points="30,70 80,30 80,110" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><line x1="80" y1="30" x2="80" y2="110" stroke="#CBD5E1" stroke-dasharray="4,4" stroke-width="2"/><text x="45" y="45" font-size="10" font-weight="bold">8 cm</text><text x="45" y="100" font-size="10" font-weight="bold">8 cm</text><text x="140" y="20" font-size="10" font-weight="bold">15 cm</text><text x="215" y="75" font-size="10" font-weight="bold">8 cm</text><text x="140" y="125" font-size="10" font-weight="bold">15 cm</text></svg>`,
+                correct: 54,
+                unit: "cm"
+            },
+            {
+                id: 7,
+                title: "Soal 7: Gabungan 3 Persegi Identik Sejajar",
+                desc: "Tiga buah persegi identik dengan panjang sisi masing-masing 6 cm disusun secara murni berdampingan secara horizontal. Hitunglah keliling tepi terluar dari gabungan 3 persegi tersebut!",
+                svg: `<svg width="230" height="110" viewBox="0 0 230 110"><rect x="20" y="25" width="60" height="60" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2"/><rect x="80" y="25" width="60" height="60" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2"/><rect x="140" y="25" width="60" height="60" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2"/><text x="45" y="15" font-size="10" font-weight="bold">6 cm</text><text x="105" y="15" font-size="10" font-weight="bold">6 cm</text><text x="165" y="15" font-size="10" font-weight="bold">6 cm</text><text x="5" y="60" font-size="10" font-weight="bold">6 cm</text><text x="205" y="60" font-size="10" font-weight="bold">6 cm</text><text x="45" y="100" font-size="10" font-weight="bold">6 cm</text><text x="105" y="100" font-size="10" font-weight="bold">6 cm</text><text x="165" y="100" font-size="10" font-weight="bold">6 cm</text></svg>`,
+                correct: 48,
+                unit: "cm"
+            },
+            {
+                id: 8,
+                title: "Soal 8: Gabungan Persegi dan Jajar Genjang",
+                desc: "Sebuah persegi (sisi 10 cm) ditempeli jajar genjang di atasnya (sisi alas 10 cm, sisi miring 7 cm). Hitung keliling luar dari gabungan bangun tersebut!",
+                svg: `<svg width="200" height="160" viewBox="0 0 200 160"><rect x="50" y="80" width="80" height="65" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><polygon points="50,80 80,25 160,25 130,80" fill="#D1FAE5" stroke="#10B981" stroke-width="3"/><text x="110" y="18" font-size="10" font-weight="bold">10 cm</text><text x="55" y="50" font-size="10" font-weight="bold">7 cm</text><text x="150" y="50" font-size="10" font-weight="bold">7 cm</text><text x="30" y="115" font-size="10" font-weight="bold">10 cm</text><text x="135" y="115" font-size="10" font-weight="bold">10 cm</text><text x="80" y="158" font-size="10" font-weight="bold">10 cm</text></svg>`,
+                correct: 54,
+                unit: "cm"
+            },
+            {
+                id: 9,
+                title: "Soal 9: Tangga Gabungan 2 Trapesium",
+                desc: "Sebuah bentuk tangga terdiri dari dua trapesium bertingkat. Sisi luar yang diketahui: atas = 12 cm, miring atas = 6 cm, miring bawah = 8 cm, bawah = 20 cm, dan tinggi tegak kiri = 10 cm. Hitung kelilingnya!",
+                svg: `<svg width="220" height="140" viewBox="0 0 220 140"><polygon points="30,20 120,20 150,60 190,60 210,110 30,110" fill="#E0E7FF" stroke="#4F46E5" stroke-width="3"/><text x="65" y="15" font-size="10" font-weight="bold">12 cm</text><text x="140" y="35" font-size="10" font-weight="bold">6 cm</text><text x="200" y="85" font-size="10" font-weight="bold">8 cm</text><text x="115" y="125" font-size="10" font-weight="bold">20 cm</text><text x="10" y="70" font-size="10" font-weight="bold">10 cm</text></svg>`,
+                correct: 56,
+                unit: "cm"
+            },
+            {
+                id: 10,
+                title: "Soal 10: Gabungan Segitiga dan Trapesium Sama Kaki",
+                desc: "Bagian atas berbentuk segitiga (dua sisi miring 8 cm & 8 cm), menyatu dengan trapesium sama kaki di bawahnya (sisi miring 7 cm & 7 cm, alas bawah 14 cm). Hitung keliling luar!",
+                svg: `<svg width="200" height="170" viewBox="0 0 200 170"><polygon points="50,70 100,20 150,70" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><polygon points="50,70 150,70 175,135 25,135" fill="#EEF2FF" stroke="#4F46E5" stroke-width="3"/><text x="60" y="40" font-size="10" font-weight="bold">8 cm</text><text x="125" y="40" font-size="10" font-weight="bold">8 cm</text><text x="20" y="105" font-size="10" font-weight="bold">7 cm</text><text x="165" y="105" font-size="10" font-weight="bold">7 cm</text><text x="90" y="155" font-size="10" font-weight="bold">14 cm</text></svg>`,
+                correct: 44,
+                unit: "cm"
+            },
+            {
+                id: 11,
+                title: "Soal 11: Gabungan Layang-Layang dan Jajar Genjang",
+                desc: "Hiasan dinding gabungan layang-layang di atas (sisi atas 9 cm & 9 cm) dan jajar genjang di bawah (sisi miring bawah 8 cm, alas bawah 10 cm). Hitung keliling terluarnya!",
+                svg: `<svg width="200" height="170" viewBox="0 0 200 170"><polygon points="40,75 100,15 160,75 100,95" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><polygon points="40,75 160,75 180,135 60,135" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><text x="60" y="40" font-size="10" font-weight="bold">9 cm</text><text x="125" y="40" font-size="10" font-weight="bold">9 cm</text><text x="35" y="110" font-size="10" font-weight="bold">8 cm</text><text x="175" y="110" font-size="10" font-weight="bold">8 cm</text><text x="115" y="155" font-size="10" font-weight="bold">10 cm</text></svg>`,
+                correct: 40,
+                unit: "cm"
+            },
+            {
+                id: 12,
+                title: "Soal 12: Gabungan Persegi Panjang dan Segitiga Sama Sisi",
+                desc: "Plang rambu jalan terdiri dari persegi panjang (panjang 18 cm, lebar 8 cm) dan segitiga sama sisi di bawahnya (sisi 18 cm). Hitung keliling luar plang tersebut!",
+                svg: `<svg width="200" height="160" viewBox="0 0 200 160"><rect x="40" y="20" width="120" height="60" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><polygon points="40,80 100,140 160,80" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><text x="90" y="15" font-size="10" font-weight="bold">18 cm</text><text x="20" y="50" font-size="10" font-weight="bold">8 cm</text><text x="165" y="50" font-size="10" font-weight="bold">8 cm</text><text x="50" y="120" font-size="10" font-weight="bold">18 cm</text><text x="125" y="120" font-size="10" font-weight="bold">18 cm</text></svg>`,
+                correct: 70,
+                unit: "cm"
+            },
+            {
+                id: 13,
+                title: "Soal 13: Gabungan Dua Jajar Genjang Identik",
+                desc: "Dua jajar genjang identik (sisi alas 11 cm, sisi miring 7 cm) disusun berhimpit pada sisi alasnya. Hitung keliling luar gabungan kedua jajar genjang!",
+                svg: `<svg width="220" height="130" viewBox="0 0 220 130"><polygon points="30,110 60,65 160,65 130,110" fill="#D1FAE5" stroke="#10B981" stroke-width="3"/><polygon points="60,65 90,20 190,20 160,65" fill="#EEF2FF" stroke="#4F46E5" stroke-width="3"/><text x="135" y="15" font-size="10" font-weight="bold">11 cm</text><text x="35" y="85" font-size="10" font-weight="bold">7 cm</text><text x="155" y="85" font-size="10" font-weight="bold">7 cm</text><text x="65" y="40" font-size="10" font-weight="bold">7 cm</text><text x="180" y="40" font-size="10" font-weight="bold">7 cm</text><text x="75" y="125" font-size="10" font-weight="bold">11 cm</text></svg>`,
+                correct: 50,
+                unit: "cm"
+            },
+            {
+                id: 14,
+                title: "Soal 14: Bentuk Rumah Sederhana Ukuran Sedang",
+                desc: "Sebuah bentuk rumah: alas persegi panjang (lebar 14 cm, tinggi dinding 9 cm) dan atap segitiga sama kaki (sisi miring atap masing-masing 11 cm). Hitung kelilingnya!",
+                svg: `<svg width="200" height="150" viewBox="0 0 200 150"><rect x="40" y="70" width="120" height="60" fill="#E0E7FF" stroke="#4F46E5" stroke-width="3"/><polygon points="40,70 100,20 160,70" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><text x="90" y="145" font-size="10" font-weight="bold">14 cm</text><text x="20" y="105" font-size="10" font-weight="bold">9 cm</text><text x="165" y="105" font-size="10" font-weight="bold">9 cm</text><text x="55" y="40" font-size="10" font-weight="bold">11 cm</text><text x="125" y="40" font-size="10" font-weight="bold">11 cm</text></svg>`,
+                correct: 54,
+                unit: "cm"
+            },
+            {
+                id: 15,
+                title: "Soal 15: Gabungan 4 Persegi (Bentuk Plus / Salib)",
+                desc: "Bentuk salib terdiri dari 5 persegi identik (sisi 5 cm). Hitung keliling tepi luar dari bentuk salib tersebut!",
+                svg: `<svg width="180" height="170" viewBox="0 0 180 170"><rect x="65" y="15" width="45" height="45" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2"/><rect x="20" y="60" width="45" height="45" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2"/><rect x="65" y="60" width="45" height="45" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/><rect x="110" y="60" width="45" height="45" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2"/><rect x="65" y="105" width="45" height="45" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2"/><text x="80" y="10" font-size="10" font-weight="bold">5 cm</text></svg>`,
+                correct: 60,
+                unit: "cm"
+            },
+            {
+                id: 16,
+                title: "Soal 16: Gabungan Persegi Panjang dan Trapesium Sama Kaki",
+                desc: "Persegi panjang (panjang 16 cm, lebar 7 cm) digabung dengan trapesium sama kaki di atasnya (sisi atas 10 cm, sisi miring 6 cm & 6 cm). Berapakah keliling terluarnya?",
+                svg: `<svg width="220" height="150" viewBox="0 0 220 150"><rect x="40" y="80" width="140" height="50" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><polygon points="40,80 60,30 160,30 180,80" fill="#D1FAE5" stroke="#10B981" stroke-width="3"/><text x="100" y="20" font-size="10" font-weight="bold">10 cm</text><text x="35" y="50" font-size="10" font-weight="bold">6 cm</text><text x="165" y="50" font-size="10" font-weight="bold">6 cm</text><text x="20" y="110" font-size="10" font-weight="bold">7 cm</text><text x="185" y="110" font-size="10" font-weight="bold">7 cm</text><text x="100" y="145" font-size="10" font-weight="bold">16 cm</text></svg>`,
+                correct: 52,
+                unit: "cm"
+            },
+            {
+                id: 17,
+                title: "Soal 17: Gabungan Belah Ketupat dan Segitiga Sama Sisi",
+                desc: "Belah ketupat (sisi 9 cm) digabung dengan segitiga sama sisi (sisi 9 cm) pada salah satu sisinya. Berapakah keliling tepi luar bangun gabungan ini?",
+                svg: `<svg width="200" height="150" viewBox="0 0 200 150"><polygon points="40,80 80,30 120,80 80,130" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><polygon points="120,80 80,30 160,30" fill="#E0E7FF" stroke="#4F46E5" stroke-width="3"/><text x="50" y="50" font-size="10" font-weight="bold">9 cm</text><text x="50" y="110" font-size="10" font-weight="bold">9 cm</text><text x="100" y="110" font-size="10" font-weight="bold">9 cm</text><text x="120" y="20" font-size="10" font-weight="bold">9 cm</text><text x="150" y="60" font-size="10" font-weight="bold">9 cm</text></svg>`,
+                correct: 45,
+                unit: "cm"
+            },
+            {
+                id: 18,
+                title: "Soal 18: Lapangan Berbentuk Gabungan Persegi dan 2 Segitiga",
+                desc: "Lapangan utama berbentuk persegi (sisi 20 m). Di sisi kiri dan kanan ditempeli segitiga sama kaki identik (sisi miring 15 m & 15 m). Berapakah keliling lapangan gabungan tersebut?",
+                svg: `<svg width="240" height="140" viewBox="0 0 240 140"><rect x="70" y="30" width="100" height="80" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><polygon points="70,30 20,70 70,110" fill="#EEF2FF" stroke="#4F46E5" stroke-width="3"/><polygon points="170,30 220,70 170,110" fill="#EEF2FF" stroke="#4F46E5" stroke-width="3"/><text x="115" y="20" font-size="10" font-weight="bold">20 m</text><text x="115" y="125" font-size="10" font-weight="bold">20 m</text><text x="30" y="45" font-size="10" font-weight="bold">15 m</text><text x="30" y="100" font-size="10" font-weight="bold">15 m</text><text x="195" y="45" font-size="10" font-weight="bold">15 m</text><text x="195" y="100" font-size="10" font-weight="bold">15 m</text></svg>`,
+                correct: 100,
+                unit: "m"
+            },
+            {
+                id: 19,
+                title: "Soal 19: Gabungan Layang-Layang dan Trapesium",
+                desc: "Bagian atas berbentuk layang-layang (sisi atas 7 cm & 7 cm), bagian bawah berbentuk trapesium (sisi miring 8 cm & 8 cm, alas bawah 12 cm). Hitung keliling luar hiasan ini!",
+                svg: `<svg width="180" height="170" viewBox="0 0 180 170"><polygon points="40,80 90,20 140,80 90,100" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><polygon points="40,80 140,80 160,140 20,140" fill="#D1FAE5" stroke="#10B981" stroke-width="3"/><text x="55" y="45" font-size="10" font-weight="bold">7 cm</text><text x="105" y="45" font-size="10" font-weight="bold">7 cm</text><text x="15" y="115" font-size="10" font-weight="bold">8 cm</text><text x="155" y="115" font-size="10" font-weight="bold">8 cm</text><text x="80" y="158" font-size="10" font-weight="bold">12 cm</text></svg>`,
+                correct: 42,
+                unit: "cm"
+            },
+            {
+                id: 20,
+                title: "Soal 20: Bentuk Meja Gabungan (Persegi Panjang + 2 Persegi)",
+                desc: "Sebuah meja gabungan: persegi panjang tengah (16 cm x 10 cm) dan dua persegi kecil (sisi 6 cm) di ujung kiri-kanan bawah. Sisi terluar dihitung total. Hitung kelilingnya!",
+                svg: `<svg width="240" height="140" viewBox="0 0 240 140"><rect x="50" y="20" width="140" height="60" fill="#E0E7FF" stroke="#4F46E5" stroke-width="3"/><rect x="50" y="80" width="40" height="40" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><rect x="150" y="80" width="40" height="40" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><text x="110" y="15" font-size="10" font-weight="bold">16 cm</text><text x="25" y="50" font-size="10" font-weight="bold">10 cm</text><text x="195" y="50" font-size="10" font-weight="bold">10 cm</text></svg>`,
+                correct: 76,
+                unit: "cm"
+            },
+            {
+                id: 21,
+                title: "Soal 21: Gabungan Segitiga Siku-Siku dan Persegi Panjang",
+                desc: "Persegi panjang (alas 12 cm, tinggi 5 cm) ditempeli segitiga siku-siku di atasnya (tinggi segitiga 9 cm, sisi miring 15 cm). Hitung keliling terluar dari gabungan ini!",
+                svg: `<svg width="200" height="160" viewBox="0 0 200 160"><rect x="40" y="90" width="110" height="50" fill="#D1FAE5" stroke="#10B981" stroke-width="3"/><polygon points="40,90 40,20 150,90" fill="#EEF2FF" stroke="#4F46E5" stroke-width="3"/><text x="90" y="155" font-size="10" font-weight="bold">12 cm</text><text x="20" y="120" font-size="10" font-weight="bold">5 cm</text><text x="155" y="120" font-size="10" font-weight="bold">5 cm</text><text x="20" y="55" font-size="10" font-weight="bold">9 cm</text><text x="100" y="50" font-size="10" font-weight="bold">15 cm</text></svg>`,
+                correct: 46,
+                unit: "cm"
+            },
+            {
+                id: 22,
+                title: "Soal 22: Gabungan Trapesium dan Jajar Genjang",
+                desc: "Trapesium (sisi atas 8 cm, sisi miring kiri 7 cm, alas 14 cm) menyatu di sebelah kanan dengan jajar genjang (sisi miring kanan 7 cm, alas 14 cm). Hitung keliling luar gabungan!",
+                svg: `<svg width="250" height="120" viewBox="0 0 250 120"><polygon points="30,30 90,30 140,90 30,90" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><polygon points="140,90 90,30 170,30 220,90" fill="#E0E7FF" stroke="#4F46E5" stroke-width="3"/><text x="55" y="20" font-size="10" font-weight="bold">8 cm</text><text x="125" y="20" font-size="10" font-weight="bold">14 cm</text><text x="15" y="60" font-size="10" font-weight="bold">7 cm</text><text x="200" y="60" font-size="10" font-weight="bold">7 cm</text><text x="75" y="105" font-size="10" font-weight="bold">14 cm</text><text x="175" y="105" font-size="10" font-weight="bold">14 cm</text></svg>`,
+                correct: 64,
+                unit: "cm"
+            },
+            {
+                id: 23,
+                title: "Soal 23: Gabungan Dua Segitiga Sama Sisi Berhimpit",
+                desc: "Dua segitiga sama sisi dengan panjang sisi masing-masing 13 cm ditempelkan sehingga satu sisinya berhimpit penuh. Hitung keliling terluar bangun gabungan tersebut!",
+                svg: `<svg width="220" height="130" viewBox="0 0 220 130"><polygon points="30,100 80,20 130,100" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><polygon points="130,100 80,20 180,20" fill="#EEF2FF" stroke="#4F46E5" stroke-width="3"/><text x="40" y="55" font-size="10" font-weight="bold">13 cm</text><text x="75" y="115" font-size="10" font-weight="bold">13 cm</text><text x="120" y="15" font-size="10" font-weight="bold">13 cm</text><text x="165" y="65" font-size="10" font-weight="bold">13 cm</text></svg>`,
+                correct: 52,
+                unit: "cm"
+            },
+            {
+                id: 24,
+                title: "Soal 24: Taman Gabungan Persegi dan Belah Ketupat",
+                desc: "Taman berbentuk persegi (sisi 10 m) berhimpit pada sisi kanannya dengan belah ketupat (sisi 10 m). Hitung keliling pagar luar taman tersebut!",
+                svg: `<svg width="240" height="130" viewBox="0 0 240 130"><rect x="30" y="25" width="80" height="80" fill="#D1FAE5" stroke="#10B981" stroke-width="3"/><polygon points="110,25 150,65 110,105 70,65" fill="#FEF3C7" opacity="0.8" stroke="#F59E0B" stroke-width="3"/><rect x="30" y="25" width="80" height="80" fill="none" stroke="#10B981" stroke-width="3"/><line x1="110" y1="25" x2="110" y2="105" stroke="#CBD5E1" stroke-dasharray="4,4" stroke-width="2"/><text x="65" y="15" font-size="10" font-weight="bold">10 m</text><text x="10" y="70" font-size="10" font-weight="bold">10 m</text><text x="65" y="120" font-size="10" font-weight="bold">10 m</text><text x="135" y="40" font-size="10" font-weight="bold">10 m</text><text x="135" y="95" font-size="10" font-weight="bold">10 m</text></svg>`,
+                correct: 50,
+                unit: "m"
+            },
+            {
+                id: 25,
+                title: "Soal 25: Gabungan Persegi Panjang dan Segitiga Sama Kaki",
+                desc: "Plang penunjuk arah berbentuk persegi panjang (panjang 24 cm, tinggi 10 cm) dan segitiga sama kaki sebagai panah di ujung kanan (sisi miring panah 13 cm & 13 cm). Hitung kelilingnya!",
+                svg: `<svg width="250" height="130" viewBox="0 0 250 130"><rect x="30" y="35" width="140" height="60" fill="#EEF2FF" stroke="#4F46E5" stroke-width="3"/><polygon points="170,35 225,65 170,95" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><text x="90" y="25" font-size="10" font-weight="bold">24 cm</text><text x="15" y="70" font-size="10" font-weight="bold">10 cm</text><text x="90" y="110" font-size="10" font-weight="bold">24 cm</text><text x="195" y="45" font-size="10" font-weight="bold">13 cm</text><text x="195" y="90" font-size="10" font-weight="bold">13 cm</text></svg>`,
+                correct: 84,
+                unit: "cm"
+            },
+            {
+                id: 26,
+                title: "Soal 26: Gabungan Persegi Besar dan Persegi Kecil",
+                desc: "Persegi besar (sisi 15 cm) menempel dengan persegi kecil (sisi 7 cm) di sudut kanan bawah. Berapakah keliling tepi luar gabungan kedua persegi tersebut?",
+                svg: `<svg width="210" height="150" viewBox="0 0 210 150"><rect x="30" y="20" width="100" height="100" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><rect x="130" y="70" width="50" height="50" fill="#E0E7FF" stroke="#4F46E5" stroke-width="3"/><text x="75" y="15" font-size="10" font-weight="bold">15 cm</text><text x="10" y="75" font-size="10" font-weight="bold">15 cm</text><text x="75" y="135" font-size="10" font-weight="bold">15 cm</text><text x="155" y="60" font-size="10" font-weight="bold">7 cm</text><text x="185" y="100" font-size="10" font-weight="bold">7 cm</text><text x="155" y="135" font-size="10" font-weight="bold">7 cm</text></svg>`,
+                correct: 74,
+                unit: "cm"
+            },
+            {
+                id: 27,
+                title: "Soal 27: Gabungan Trapesium Siku-Siku dan Segitiga",
+                desc: "Trapesium siku-siku (sisi atas 10 cm, tinggi 8 cm, alas 16 cm) digabung dengan segitiga sama kaki di sisi kanan (sisi miring 10 cm & 10 cm). Hitung keliling luar gabungannya!",
+                svg: `<svg width="240" height="130" viewBox="0 0 240 130"><polygon points="30,30 110,30 160,90 30,90" fill="#D1FAE5" stroke="#10B981" stroke-width="3"/><polygon points="160,90 110,30 210,60" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><text x="65" y="20" font-size="10" font-weight="bold">10 cm</text><text x="15" y="65" font-size="10" font-weight="bold">8 cm</text><text x="90" y="105" font-size="10" font-weight="bold">16 cm</text><text x="160" y="35" font-size="10" font-weight="bold">10 cm</text><text x="185" y="85" font-size="10" font-weight="bold">10 cm</text></svg>`,
+                correct: 54,
+                unit: "cm"
+            },
+            {
+                id: 28,
+                title: "Soal 28: Gabungan 3 Segitiga Sama Sisi Murni",
+                desc: "Tiga segitiga sama sisi identik (sisi 8 cm) disusun berjajar membentuk trapesium besar. Hitung keliling tepi luar dari gabungan ketiga segitiga tersebut!",
+                svg: `<svg width="220" height="120" viewBox="0 0 220 120"><polygon points="30,90 70,20 110,90" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2"/><polygon points="70,20 110,90 150,20" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/><polygon points="110,90 150,20 190,90" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2"/><text x="100" y="15" font-size="10" font-weight="bold">8 cm</text><text x="35" y="50" font-size="10" font-weight="bold">8 cm</text><text x="180" y="50" font-size="10" font-weight="bold">8 cm</text><text x="60" y="105" font-size="10" font-weight="bold">8 cm</text><text x="140" y="105" font-size="10" font-weight="bold">8 cm</text></svg>`,
+                correct: 40,
+                unit: "cm"
+            },
+            {
+                id: 29,
+                title: "Soal 29: Pintu Gerbang (Persegi Panjang + Trapesium)",
+                desc: "Pintu gerbang berukuran: tiang kiri-kanan tinggi 12 m, lebar dasar 10 m, bagian atap berupa trapesium sama kaki (sisi atas 6 m, sisi miring atap 5 m & 5 m). Hitung keliling luar gerbang!",
+                svg: `<svg width="200" height="170" viewBox="0 0 200 170"><rect x="40" y="70" width="120" height="80" fill="#E0E7FF" stroke="#4F46E5" stroke-width="3"/><polygon points="40,70 65,20 135,20 160,70" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><text x="90" y="15" font-size="10" font-weight="bold">6 m</text><text x="35" y="40" font-size="10" font-weight="bold">5 m</text><text x="145" y="40" font-size="10" font-weight="bold">5 m</text><text x="20" y="115" font-size="10" font-weight="bold">12 m</text><text x="165" y="115" font-size="10" font-weight="bold">12 m</text><text x="90" y="165" font-size="10" font-weight="bold">10 m</text></svg>`,
+                correct: 50,
+                unit: "m"
+            },
+            {
+                id: 30,
+                title: "Soal 30: Kompleks Panggung (Persegi + 2 Layang-Layang)",
+                desc: "Panggung persegi tengah (sisi 12 m) dilengkapi hiasan layang-layang di atas dan bawahnya (sisi luar masing-masing layang-layang 8 m & 8 m). Hitung total keliling luar kompleks panggung!",
+                svg: `<svg width="200" height="190" viewBox="0 0 200 190"><rect x="60" y="60" width="80" height="70" fill="#FEF3C7" stroke="#F59E0B" stroke-width="3"/><polygon points="60,60 100,10 140,60" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><polygon points="60,130 100,180 140,130" fill="#FCE7F3" stroke="#EC4899" stroke-width="3"/><text x="70" y="30" font-size="10" font-weight="bold">8 m</text><text x="120" y="30" font-size="10" font-weight="bold">8 m</text><text x="40" y="95" font-size="10" font-weight="bold">12 m</text><text x="145" y="95" font-size="10" font-weight="bold">12 m</text><text x="70" y="160" font-size="10" font-weight="bold">8 m</text><text x="120" y="160" font-size="10" font-weight="bold">8 m</text></svg>`,
+                correct: 56,
+                unit: "m"
+            }
+        ];
+
+        // STATE MANAGEMENT
+        let currentIdx = 0;
+        let userAnswers = {}; // Format: { questionId: { val: number, isCorrect: boolean } }
+
+        // LOCAL STORAGE KEYS
+        const STORAGE_KEY = "quiz_keliling_gabungan_v1";
+
+        // INIT APP
+        window.onload = function() {
+            loadSavedAnswers();
+            renderNavGrid();
+            loadQuestion(0);
+        };
+
+        // SAVE & LOAD LOCAL STORAGE
+        function saveToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(userAnswers));
+            const statusEl = document.getElementById('save-status');
+            statusEl.classList.remove('opacity-50');
+            setTimeout(() => statusEl.classList.add('opacity-50'), 1000);
+        }
+
+        function loadSavedAnswers() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    userAnswers = JSON.parse(saved);
+                } catch(e) {
+                    userAnswers = {};
+                }
+            }
+        }
+
+        function confirmReset() {
+            if (confirm("Apakah kamu yakin ingin mereset semua jawaban dan memulai dari awal?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                userAnswers = {};
+                renderNavGrid();
+                loadQuestion(0);
+                alert("Semua jawaban berhasil direset!");
+            }
+        }
+
+        // RENDER NAV GRID 1-30
+        function renderNavGrid() {
+            const gridContainer = document.getElementById('nav-grid');
+            gridContainer.innerHTML = '';
+
+            let totalAnswered = 0;
+            let totalCorrect = 0;
+
+            quizData.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.textContent = idx + 1;
+                btn.onclick = () => loadQuestion(idx);
+
+                let classNames = "nav-grid-btn w-full h-10 rounded-xl font-bold border text-xs flex items-center justify-center transition shadow-sm ";
+
+                if (idx === currentIdx) {
+                    classNames += "current ";
+                }
+
+                if (userAnswers[q.id] !== undefined) {
+                    totalAnswered++;
+                    if (userAnswers[q.id].isCorrect) {
+                        classNames += "answered-correct ";
+                        totalCorrect++;
+                    } else {
+                        classNames += "answered-incorrect ";
+                    }
+                } else if (idx !== currentIdx) {
+                    classNames += "bg-slate-50 border-slate-200 text-slate-700 hover:border-indigo-300 ";
+                }
+
+                btn.className = classNames;
+                gridContainer.appendChild(btn);
+            });
+
+            // Update Progress Bar & Score
+            document.getElementById('progress-text').textContent = `${totalAnswered} / 30`;
+            const pct = Math.round((totalAnswered / 30) * 100);
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('q-score-badge').textContent = `Skor: ${totalCorrect} / 30`;
+        }
+
+        // LOAD SPECIFIC QUESTION
+        function loadQuestion(idx) {
+            currentIdx = idx;
+            const q = quizData[currentIdx];
+
+            // Update Badges & Content
+            document.getElementById('q-number-badge').textContent = `Soal ${idx + 1} dari 30`;
+            document.getElementById('q-title').textContent = q.title;
+            document.getElementById('q-desc').textContent = q.desc;
+            document.getElementById('q-svg-container').innerHTML = q.svg;
+            document.getElementById('q-unit').textContent = q.unit;
+
+            // Handle Input Value
+            const inputEl = document.getElementById('user-input-ans');
+            const feedbackEl = document.getElementById('instant-feedback');
+
+            if (userAnswers[q.id] !== undefined) {
+                inputEl.value = userAnswers[q.id].val;
+                showFeedback(userAnswers[q.id].isCorrect, userAnswers[q.id].val, q.unit, q.correct);
+            } else {
+                inputEl.value = "";
+                feedbackEl.classList.add('hidden');
+            }
+
+            // Update Nav Prev/Next Buttons
+            document.getElementById('btn-prev').disabled = (currentIdx === 0);
+            document.getElementById('btn-prev').style.opacity = (currentIdx === 0) ? "0.5" : "1";
+
+            if (currentIdx === quizData.length - 1) {
+                document.getElementById('btn-next').innerHTML = `Selesai <i class="fa-solid fa-flag-checkered"></i>`;
+            } else {
+                document.getElementById('btn-next').innerHTML = `Berikutnya <i class="fa-solid fa-arrow-right"></i>`;
+            }
+
+            renderNavGrid();
+        }
+
+        // CHECK ANSWER
+        function checkCurrentAnswer() {
+            const q = quizData[currentIdx];
+            const inputEl = document.getElementById('user-input-ans');
+            const userVal = parseInt(inputEl.value);
+
+            if (isNaN(userVal)) {
+                alert("Silakan ketik angka jawaban terlebih dahulu!");
+                return;
+            }
+
+            const isCorrect = (userVal === q.correct);
+            
+            // Store state
+            userAnswers[q.id] = {
+                val: userVal,
+                isCorrect: isCorrect
+            };
+
+            saveToStorage();
+            showFeedback(isCorrect, userVal, q.unit, q.correct);
+            renderNavGrid();
+
+            if (isCorrect) {
+                confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
+            }
+        }
+
+        function showFeedback(isCorrect, userVal, unit, correctVal) {
+            const feedbackEl = document.getElementById('instant-feedback');
+            feedbackEl.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-800', 'bg-rose-50', 'border-rose-200', 'text-rose-800');
+
+            if (isCorrect) {
+                feedbackEl.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800');
+                feedbackEl.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                        <span>JAWABAN BENAR! (${userVal} ${unit})</span>
+                    </div>
+                    <p class="text-xs font-normal text-emerald-700 mt-1">Luar biasa! Kamu menghitung sisi-sisi terluarnya dengan sangat tepat.</p>
+                `;
+            } else {
+                feedbackEl.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-800');
+                feedbackEl.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-xmark text-rose-600 text-lg"></i>
+                        <span>JAWABAN MASIH SALAH (${userVal} ${unit})</span>
+                    </div>
+                    <p class="text-xs font-normal text-rose-700 mt-1">Coba teliti lagi dan pastikan garis sekat/sisi bagian dalam tidak ikut dihitung ya!</p>
+                `;
+            }
+        }
+
+        // PREV & NEXT NAVIGATION
+        function prevQuestion() {
+            if (currentIdx > 0) {
+                loadQuestion(currentIdx - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIdx < quizData.length - 1) {
+                loadQuestion(currentIdx + 1);
+            } else {
+                // Selesai Quiz Summary
+                const totalCorrect = Object.values(userAnswers).filter(a => a.isCorrect).length;
+                alert(`Selamat! Kamu telah menyelesaikan quiz.\nSkor Akhir Kamu: ${totalCorrect} / 30 Soal Benar.`);
+            }
+        }
+    </script>
+</body>
+</html>
